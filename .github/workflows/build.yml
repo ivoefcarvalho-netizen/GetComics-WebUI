@@ -1,0 +1,62 @@
+name: Compilar GetComics
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            target: macOS
+          - os: windows-2022
+            target: Windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Instalar aria2 no macOS
+        if: runner.os == 'macOS'
+        run: brew install aria2
+      - name: Instalar aria2 no Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: choco install aria2 -y --no-progress
+      - name: Adicionar aria2 ao PATH no Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $bin = Get-ChildItem 'C:\ProgramData\chocolatey\lib\aria2' -Recurse -Filter aria2c.exe -ErrorAction Stop | Select-Object -First 1
+          if (-not $bin) { throw 'aria2c.exe não encontrado' }
+          $bin.DirectoryName | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+      - name: Instalar dependências Python
+        run: python -m pip install --upgrade pip pyinstaller beautifulsoup4 requests rich certifi
+      - name: Compilar
+        run: python compilar.py
+      - name: Empacotar macOS
+        if: runner.os == 'macOS'
+        run: |
+          cd dist
+          ditto -c -k --sequesterRsrc --keepParent GetComics.app GetComics-macOS.zip
+      - name: Empacotar Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path dist/GetComics -DestinationPath dist/GetComics-Windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GetComics-${{ matrix.target }}
+          path: dist/GetComics-${{ matrix.target }}.zip
+          if-no-files-found: error
+      - name: Publicar ficheiro numa Release para tags
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh release upload "${GITHUB_REF_NAME}" "dist/GetComics-${{ matrix.target }}.zip" --clobber || gh release create "${GITHUB_REF_NAME}" "dist/GetComics-${{ matrix.target }}.zip" --generate-notes
+permissions:
+  contents: write

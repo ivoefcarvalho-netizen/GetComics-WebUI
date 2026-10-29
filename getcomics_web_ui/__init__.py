@@ -1,0 +1,1 @@
+"""GetComics Web UI."""
