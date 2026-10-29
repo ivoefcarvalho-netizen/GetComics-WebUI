@@ -312,7 +312,18 @@ def download_job(ids):
         offset=len(state['downloads'])
         state['downloads'].extend([{'title':r['title'],'source':r['source'],'status':'queued','message':'Em espera'} for r in rows])
     download_dir=DEST
-    for j,row in enumerate(rows):download_one(row,offset+j,download_dir)
+    for j,row in enumerate(rows):
+        download_one(row,offset+j,download_dir)
+        with lock:
+            message = state['downloads'][offset+j].get('message','')
+        if '429' in message or 'Too Many Requests' in message:
+            with lock:
+                for rest in range(j+1,len(rows)):
+                    state['downloads'][offset+rest].update(
+                        status='error',
+                        message='Fila interrompida: GetComics devolveu HTTP 429. Aguarda antes de repetir.'
+                    )
+            break
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self,fmt,*args): pass
