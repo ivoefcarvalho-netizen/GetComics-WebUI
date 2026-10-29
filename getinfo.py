@@ -140,6 +140,12 @@ class GetComics:
             try:
                 response = requests.get(page_url, headers=HEADERS, timeout=15)
                 response.raise_for_status()
+            except requests.HTTPError as exc:
+                if exc.response is not None and exc.response.status_code == 429:
+                    raise RuntimeError('GetComics limitou temporariamente as consultas (HTTP 429). Interrompe as tentativas e volta mais tarde.') from exc
+                if self.verbose:
+                    console.print(f'[yellow]Falha HTTP ao abrir {page_url}: {exc}[/yellow]')
+                continue
             except requests.RequestException as exc:
                 if self.verbose:
                     console.print(f'[yellow]Falha ao abrir {page_url}: {exc}[/yellow]')
