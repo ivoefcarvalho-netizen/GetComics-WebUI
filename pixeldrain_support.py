@@ -90,9 +90,14 @@ def _aria2_download(base, target, expected_size, key):
             base + '?download',
         ]
         print(f'[Pixeldrain] aria2c ({connections} ligações no máximo): {target.name}', flush=True)
-        result = subprocess.run(args, check=False)
+        result = subprocess.run(args, check=False, capture_output=True, text=True, errors='replace')
         if result.returncode != 0:
-            raise RuntimeError(f'aria2c terminou com erro {result.returncode}; ficheiro parcial preservado')
+            details = (result.stderr or result.stdout or '').strip()
+            safe_details = '\n'.join(details.splitlines()[-6:])[:1000]
+            # Evitar colocar a chave de autenticação nos logs.
+            if key:
+                safe_details = safe_details.replace(key, '[OCULTA]')
+            raise RuntimeError(f'aria2c terminou com erro {result.returncode}: {safe_details or "sem detalhes"}')
         if not partial.is_file():
             raise RuntimeError('aria2c não produziu um ficheiro de download')
         length = partial.stat().st_size
@@ -142,6 +147,16 @@ def download_pixeldrain(url, download_dir):
     target = _target(download_dir, info.get('name') or identifier + '.cbz')
     size = info.get('size')
     if shutil.which('aria2c'):
-        return _aria2_download(base, target, size, key)
-    print('[Pixeldrain] aria2c indisponível; a usar Python (uma ligação).')
+        try:
+            return _aria2_download(base, target, size, key)
+        except (RuntimeError, OSError) as exc:
+            # O aria2c empacotado pode falhar mesmo estando presente. Dar diagnóstico
+            # e usar o método HTTP autenticado como alternativa.
+            print('[Pixeldrain] Falha aria2c: ' + str(exc), flush=True)
+            print('[Pixeldrain] A tentar download alternativo através de Python.', flush=True)
+            partial = target.with_name(target.name + '.part')
+            if partial.exists():
+                partial.rename(target.with_name(target.name + '.aria2-falhou'))
+    else:
+        print('[Pixeldrain] aria2c indisponível; a usar Python (uma ligação).', flush=True)
     return _requests_download(base, target, size, auth)
