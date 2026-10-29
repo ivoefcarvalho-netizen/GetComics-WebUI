@@ -35,7 +35,7 @@ jobs:
           if (-not $bin) { throw 'aria2c.exe não encontrado' }
           $bin.DirectoryName | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
       - name: Instalar dependências Python
-        run: python -m pip install --upgrade pip pyinstaller beautifulsoup4 requests rich certifi
+        run: python -m pip install --upgrade pip pyinstaller beautifulsoup4 requests rich certifi pywebview
       - name: Compilar
         run: python compilar.py
       - name: Empacotar macOS
