@@ -16,7 +16,7 @@ cmd=[sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onedir','--nam
      '--specpath',str(ROOT), '--add-data',str(ROOT/'getcomics_web_ui'/'index.html')+separator+'getcomics_web_ui',
      '--add-binary',str(aria)+separator+'.',
      '--hidden-import','getcomics_web_ui.webui','--hidden-import','getinfo','--hidden-import','download',
-     '--hidden-import','menu','--hidden-import','pixeldrain_support','--collect-all','certifi','--collect-all','rich']
+     '--hidden-import','menu','--hidden-import','pixeldrain_support','--collect-all','certifi','--collect-all','rich', '--collect-all','webview']
 if platform.system() == 'Darwin': cmd.append('--windowed')
 else: cmd.append('--console')
 cmd.append(str(ROOT/'launcher.py'))
