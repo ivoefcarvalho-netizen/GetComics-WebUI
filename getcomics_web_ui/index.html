@@ -1,12 +1,322 @@
-<!doctype html><html lang="pt-PT"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GetComics • Biblioteca</title><style>
-:root{color-scheme:dark;--bg:#0b1020;--card:#151d31;--stroke:#283651;--text:#eff4ff;--sub:#a1afc6;--purple:#9869f5;--cyan:#31c6e8}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 0 0,#242046,transparent 35%),var(--bg);color:var(--text);font:15px system-ui,-apple-system,sans-serif}.wrap{max-width:1180px;margin:auto;padding:30px 22px}header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:30px}h1{font-size:28px;margin:0}h1 span{color:var(--purple)}.tag{border:1px solid var(--stroke);border-radius:100px;padding:8px 12px;color:var(--sub);font-size:12px}.card{background:rgba(21,29,49,.92);border:1px solid var(--stroke);border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 12px 26px #0002}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}input[type=text],input[type=password],input[type=number],select{border:1px solid var(--stroke);background:#0d1425;color:var(--text);border-radius:9px;padding:10px}input[type=search]{flex:1;min-width:220px;border:1px solid var(--stroke);background:#0d1425;color:var(--text);border-radius:11px;padding:15px;font:inherit}button{cursor:pointer;border:0;border-radius:11px;background:var(--purple);color:white;font-weight:700;padding:14px 18px}button.secondary{background:#263753}button:disabled{opacity:.4;cursor:not-allowed}label{color:var(--sub)}.muted{color:var(--sub)}#status{margin-top:14px}.headline{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}h2{margin:0;font-size:19px}table{width:100%;border-collapse:collapse;margin-top:16px}th{text-align:left;color:var(--sub);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.07em;padding:12px}td{padding:12px;border-top:1px solid var(--stroke)}tr:hover td{background:#ffffff04}.badge{display:inline-block;padding:6px 9px;border-radius:6px;background:#27364d;color:#b7defd;font-size:12px}.badge.px{background:#193c38;color:#6ce0c5}.badge.fail{background:#522731;color:#ffb1b9}.badge.done{background:#204439;color:#99f2c6}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.scroll{overflow-x:auto}input[type=checkbox]{accent-color:var(--purple);width:17px;height:17px}.footer{font-size:12px;color:var(--sub)}#queue .item{padding:12px 0;border-bottom:1px solid var(--stroke);display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}.empty{text-align:center;color:var(--sub);padding:32px}code{color:#b4f2ff}a{color:var(--cyan)}@media(max-width:700px){.wrap{padding:18px 12px}th:nth-child(1),td:nth-child(1){width:30px}h1{font-size:23px}td{font-size:13px}}
-</style></head><body><div class="wrap"><header><h1>📚 Get<span>Comics</span> <small style="font-size:13px;color:#a1afc6">WEB</small></h1><div class="tag">● Local • Pixeldrain Premium</div></header><section class="card"><h2>Pesquisar bandas desenhadas</h2><p class="muted">Pesquisa todas as páginas e apresenta os resultados numa única lista. Os servidores são verificados apenas ao descarregar, para manter resultados estáveis.</p><div class="row"><input id="query" type="search" placeholder="Ex.: Ultimate Black Panther" autofocus><button id="go">Pesquisar</button></div><div class="row" style="margin-top:15px"><label><input type="checkbox" id="only" checked> Apenas números individuais (sem TPB/colectâneas)</label><label><input type="checkbox" id="refresh"> Actualizar pesquisa (ignorar cache)</label></div><div id="status" class="muted">Pronto.</div></section><section class="card"><div class="headline"><h2>⚙️ Definições pessoais</h2><button id="settingsToggle" class="secondary">Mostrar / ocultar</button></div><div id="settingsPanel" hidden style="margin-top:18px"><p class="muted">Estas definições são guardadas apenas neste computador e não acompanham a aplicação quando a partilhares.</p><div class="row"><label for="dlpath">Pasta de downloads</label><input id="dlpath" type="text" placeholder="Pasta de destino" style="flex:1;min-width:250px;background:#0d1425;border:1px solid #283651;color:white;padding:12px;border-radius:9px"><button id="chooseFolder" class="secondary">Escolher pasta…</button></div><div class="row" style="margin-top:12px"><label>Servidor preferido <select id="priority"><option value="pixeldrain">Pixeldrain (se disponível)</option><option value="direct">Servidor directo (se disponível)</option></select></label><label>Máx. ligações Pixeldrain <input id="connections" type="number" min="1" max="16" value="8" style="width:70px"></label><label>Máx. páginas <input id="maxpages" type="number" min="1" max="100" value="40" style="width:75px"></label></div><div class="row" style="margin-top:12px"><label>Chave API Pixeldrain <input id="apikey" type="password" placeholder="Deixar vazio para manter" autocomplete="new-password" style="width:260px;max-width:90%"></label><button id="showkey" class="secondary" type="button">Mostrar/ocultar</button><label><input id="removekey" type="checkbox"> Eliminar chave guardada</label></div><p class="muted" id="keyStatus">A verificar autenticação…</p><div class="row"><button id="saveSettings">Guardar definições</button><span class="muted" id="settingsStatus"></span></div></div></section><section class="card"><div class="headline"><h2>Resultados <span id="count" class="muted">(0)</span></h2><div class="toolbar"><button id="all" class="secondary">Seleccionar tudo</button><button id="none" class="secondary">Limpar</button><button id="dl">⬇ Descarregar seleccionados</button></div></div><div class="scroll"><table><thead><tr><th>✓</th><th>Banda desenhada</th><th>Servidor</th></tr></thead><tbody id="results"><tr><td colspan="3" class="empty">Faz uma pesquisa para começar.</td></tr></tbody></table></div></section><section class="card"><div class="headline"><h2>Transferências</h2><span id="destination" class="muted"></span></div><div id="queue"><p class="empty">Ainda não há transferências.</p></div></section><p class="footer">A interface funciona apenas neste Mac. A chave API não é enviada para o navegador. Os CBZ são validados antes de serem assinalados como concluídos. Utiliza apenas ficheiros que tenhas autorização para descarregar.</p></div><script>
-let token='',lastResults='',lastQueue='';const $=id=>document.getElementById(id);let selected=new Set();function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}async function post(url,data){let r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','X-App-Token':token},body:JSON.stringify(data)});let j=await r.json();if(!r.ok)throw Error(j.error||r.status);return j}function renderResults(rows){let fingerprint=JSON.stringify(rows);if(fingerprint===lastResults)return;lastResults=fingerprint;selected.clear();$('count').textContent=`(${rows.length})`;$('results').innerHTML=rows.length?rows.map(r=>`<tr><td><input type="checkbox" data-id="${r.id}"></td><td>${esc(r.title)}</td><td><span class="badge ${r.source==='Pixeldrain'?'px':''}">${esc(r.source)}</span></td></tr>`).join(''):'<tr><td colspan="3" class="empty">Sem resultados.</td></tr>';$('results').querySelectorAll('input').forEach(el=>el.onchange=()=>{let id=Number(el.dataset.id);el.checked?selected.add(id):selected.delete(id)})}function renderQueue(rows){let fingerprint=JSON.stringify(rows);if(fingerprint===lastQueue)return;lastQueue=fingerprint;$('queue').innerHTML=rows.length?rows.slice().reverse().map(r=>`<div class="item"><div><strong>${esc(r.title)}</strong><div class="muted">${esc(r.message||'')}</div></div><span class="badge ${r.status==='error'?'fail':r.status==='done'?'done':''}">${r.status==='error'?'Falhou':r.status==='done'?'Validado':r.status==='running'?'A descarregar':'Em espera'}</span></div>`).join(''):'<p class="empty">Ainda não há transferências.</p>'}async function tick(){try{let r=await fetch('/api/state',{cache:'no-store'}),s=await r.json();token=s.token;$('destination').textContent='📁 '+s.download_dir;$('status').textContent=s.search.message;$('go').disabled=s.search.status==='running';renderResults(s.results);renderQueue(s.downloads)}catch(e){$('status').textContent='Erro de ligação à aplicação: '+e.message}}$('go').onclick=async()=>{try{await post('/api/search',{query:$('query').value,only_issues:$('only').checked,refresh:$('refresh').checked});lastResults='';}catch(e){alert(e.message)};tick()};$('query').onkeydown=e=>{if(e.key==='Enter')$('go').click()};$('all').onclick=()=>{$('results').querySelectorAll('input').forEach(e=>{e.checked=true;selected.add(Number(e.dataset.id))})};$('none').onclick=()=>{$('results').querySelectorAll('input').forEach(e=>e.checked=false);selected.clear()};$('dl').onclick=async()=>{try{await post('/api/download',{ids:[...selected]});alert('Transferências adicionadas à fila.')}catch(e){alert(e.message)}};
-async function loadSettings(){try{let r=await fetch('/api/settings');let s=await r.json();$('dlpath').value=s.download_dir;$('priority').value=s.server_priority;$('connections').value=s.connections;$('maxpages').value=s.max_pages;$('keyStatus').textContent=s.has_api_key?'Chave API configurada neste computador.':'Sem chave API configurada.'}catch(e){$('settingsStatus').textContent=e.message}}
-$('settingsToggle').onclick=()=>{$('settingsPanel').hidden=!$('settingsPanel').hidden};
-$('showkey').onclick=()=>{$('apikey').type=$('apikey').type==='password'?'text':'password'};
-$('chooseFolder').onclick=async()=>{try{let r=await post('/api/choose-folder',{});if(r.path)$('dlpath').value=r.path}catch(e){$('settingsStatus').textContent=e.message}};
-$('saveSettings').onclick=async()=>{try{let data={download_dir:$('dlpath').value,server_priority:$('priority').value,connections:Number($('connections').value),max_pages:Number($('maxpages').value),remove_api_key:$('removekey').checked};if($('apikey').value.trim())data.api_key=$('apikey').value.trim();let s=await post('/api/settings',data);$('apikey').value='';$('removekey').checked=false;$('keyStatus').textContent=s.has_api_key?'Chave API configurada neste computador.':'Sem chave API configurada.';$('settingsStatus').textContent='Definições guardadas!'}catch(e){$('settingsStatus').textContent='Erro: '+e.message}};
-loadSettings();
-tick();setInterval(tick,1500)
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GetComics — Biblioteca Local</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--card:#151d31;--stroke:#283651;--text:#eff4ff;--sub:#a1afc6;--purple:#9869f5;--cyan:#31c6e8}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 0 0,#242046,transparent 35%),var(--bg);color:var(--text);font:15px system-ui,-apple-system,sans-serif}
+.wrap{max-width:1200px;margin:auto;padding:26px 20px}header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:25px}h1{font-size:27px;margin:0}h1 span{color:var(--purple)}
+.tagline,.muted{color:var(--sub)}.tagline{border:1px solid var(--stroke);border-radius:30px;padding:9px 13px;font-size:12px}
+.card{background:rgba(21,29,49,.94);border:1px solid var(--stroke);border-radius:17px;padding:22px;margin-bottom:18px;box-shadow:0 12px 26px #0002}
+.row{display:flex;gap:11px;flex-wrap:wrap;align-items:center}.controls{margin-top:13px}.field{min-width:150px;flex:1}.field.small{flex:0 1 130px}.field label{display:block;margin-bottom:7px;font-size:12px;color:var(--sub)}
+input[type=search],input[type=text],input[type=url],input[type=number],input[type=password],select{width:100%;border:1px solid var(--stroke);background:#0d1425;color:var(--text);border-radius:10px;padding:13px;font:inherit;min-width:0}
+input[type=checkbox]{accent-color:var(--purple);width:17px;height:17px;vertical-align:middle}button{cursor:pointer;border:0;border-radius:10px;background:var(--purple);color:white;font-weight:700;padding:13px 18px;font:inherit}button.secondary{background:#263753}button.small{padding:6px 10px;font-size:12px}button:disabled{opacity:.42;cursor:not-allowed}
+h2{font-size:19px;margin:0 0 12px}.help{color:var(--sub);line-height:1.55;margin:0 0 14px}.status{margin-top:13px;color:var(--cyan)}
+.headline{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.headline h2{margin:0}.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+table{width:100%;border-collapse:collapse;margin-top:13px}th{text-align:left;color:var(--sub);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding:12px}td{padding:11px 10px;border-top:1px solid var(--stroke);vertical-align:middle}tr:hover td{background:#ffffff06}
+.scroll{overflow-x:auto}.badge{display:inline-block;padding:6px 8px;border-radius:6px;background:#27364d;color:#b7defd;font-size:12px}.badge.px{background:#193c38;color:#6ce0c5}.badge.fail{background:#522731;color:#ffb1b9}.badge.done{background:#204439;color:#99f2c6}
+#queue .item{padding:13px 0;border-bottom:1px solid var(--stroke);display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}.empty{text-align:center;color:var(--sub);padding:30px}.footer{font-size:12px;color:var(--sub);line-height:1.6}
+a{color:var(--cyan)}.linklist{font-size:12px;color:var(--sub);margin-top:6px}.linklist a{display:inline-block;margin:3px 9px 0 0}.chip{display:inline-block;background:#283854;border:1px solid #38527e;color:#e4efff;border-radius:22px;margin:3px;padding:7px 11px;cursor:pointer;font:inherit;font-size:12px}.chip:hover{background:#3a4c77}.sectionline{border-top:1px solid var(--stroke);margin:18px 0}.wide{min-width:250px;flex:3}
+@media(max-width:700px){.wrap{padding:15px 10px}.card{padding:15px}.field.small{flex:1}h1{font-size:22px}td{font-size:13px}.headline{align-items:flex-start}.tagline{display:none}}
+</style>
+</head>
+<body><div class="wrap">
+<header><h1>📚 Get<span>Comics</span> <small class="muted" style="font-size:13px">LOCAL</small></h1><span class="tagline">● Aplicação local · Pixeldrain opcional</span></header>
+
+<section class="card">
+<h2>Pesquisar por título ou tag</h2>
+<p class="help">Deixa a tag vazia para pesquisar no site inteiro. Se indicares uma tag, o programa percorre apenas as páginas dessa tag e filtra os títulos localmente.</p>
+<div class="row">
+  <div class="field wide"><label for="query">Título (opcional quando há tag)</label><input id="query" type="search" placeholder="Ex.: Saga" autofocus></div>
+  <div class="field"><label for="tag">Tag do site ou URL /tag/…</label><input id="tag" type="text" placeholder="Ex.: saga"></div>
+  <div class="field small"><label for="min-year">Ano mínimo</label><input id="min-year" type="number" min="1900" max="2100" placeholder="Ex.: 2020"></div>
+  <div style="align-self:flex-end"><button id="go">Pesquisar</button></div>
+</div>
+<div class="row controls"><label><input type="checkbox" id="only" checked> Apenas números individuais</label><label><input type="checkbox" id="refresh"> Ignorar cache</label><button id="find-tags" class="secondary small">Procurar tags</button></div>
+<div id="tags-list" class="muted" aria-live="polite"></div><div id="status" class="status">Pronto para pesquisar.</div>
+</section>
+
+<section class="card">
+<h2>Abrir uma página com vários livros</h2>
+<p class="help">Cola o endereço de um artigo com volumes ou livros. Apresentamos cada ficheiro separadamente e todas as fontes anunciadas, para escolheres o que queres descarregar.</p>
+<div class="row"><div class="field wide"><label for="article-url">Endereço da página GetComics</label><input id="article-url" type="url" placeholder="https://getcomics.org/other-comics/.../"></div><div style="align-self:flex-end"><button id="open-article">Ver livros</button></div></div>
+<div id="article-tags" class="muted" aria-live="polite"></div>
+</section>
+
+
+<section class="card" id="secretstash-section">
+<div class="headline"><h2>📋 Importar Lista do Secret Stash <span id="stash-count" class="muted">(0)</span></h2>
+<div class="toolbar"><input id="stash-file" type="file" accept=".csv,text/csv" hidden>
+<button id="stash-import" class="secondary">📂 Importar CSV</button>
+<button id="stash-search">🔎 Pesquisar lista</button>
+<button id="stash-refresh" class="secondary">↻ Pesquisar novamente</button></div></div>
+<p class="help">Importa a tua lista de desejos do Secret Stash (CSV com colunas Série;Ano;Número). A aplicação pesquisa por série e procura o número e o ano correctos, reduzindo pedidos repetidos ao servidor. As correspondências são apresentadas para confirmação: nada é descarregado automaticamente.</p>
+<div class="row controls"><button id="stash-all" class="secondary small">Seleccionar encontrados</button>
+<button id="stash-none" class="secondary small">Limpar selecção</button>
+<button id="stash-download">⬇ Descarregar seleccionados</button>
+<span id="stash-progress" class="muted" aria-live="polite"></span></div>
+<div class="status" id="stash-status">Nenhuma lista importada.</div>
+<div class="scroll"><table><thead><tr><th>✓</th><th>Série</th><th>Número</th><th>Ano</th><th>Estado</th><th>Correspondência</th></tr></thead>
+<tbody id="stash-results"><tr><td colspan="6" class="empty">Importa um CSV para começar.</td></tr></tbody></table></div>
+</section>
+
+<section class="card">
+<h2>Definições de downloads</h2>
+<p class="help">A pasta escolhida fica guardada neste computador. Os downloads já iniciados mantêm o destino original.</p>
+<div class="row">
+  <div class="field wide"><label for="destination-input">Pasta de destino</label><input id="destination-input" type="text" placeholder="Escolhe a pasta de destino"></div>
+  <div style="align-self:flex-end"><button id="browse" class="secondary">Escolher pasta…</button></div>
+  <div style="align-self:flex-end"><button id="save-folder" class="secondary">Guardar</button></div>
+</div>
+<div class="row controls"><label for="priority">Ordem de tentativa:</label><select id="priority" style="max-width:250px"><option value="direct">Directo → Pixeldrain</option><option value="pixeldrain">Pixeldrain → Directo</option></select><button id="save-priority" class="secondary small">Guardar prioridade</button></div>
+<div class="row controls">
+  <div class="field small"><label for="max-pages">Máximo de páginas por pesquisa</label><input id="max-pages" type="number" min="1" max="100" value="40"></div>
+  <div class="field small"><label for="connections">Ligações Pixeldrain (1–16)</label><input id="connections" type="number" min="1" max="16" value="8"></div>
+  <button id="save-performance" class="secondary small" style="align-self:end">Guardar desempenho</button>
+</div>
+<p class="help">Mais páginas aumentam a duração da pesquisa. Mais ligações podem melhorar a velocidade, mas também aumentar os pedidos ao servidor.</p>
+<div class="sectionline"></div>
+<h3>🔑 Conta Pixeldrain Premium</h3>
+<p class="help">Introduz aqui a tua chave API Pixeldrain. Fica guardada exclusivamente neste computador, fora da pasta da aplicação, protegida pelo Windows quando aplicável; nunca é incluída no pacote distribuído. Nunca a partilhes.</p>
+<div class="row">
+  <div class="field wide"><label for="pixeldrain-key">Chave API Pixeldrain</label><input id="pixeldrain-key" type="password" autocomplete="off" spellcheck="false" placeholder="Cola a tua chave API aqui"></div>
+  <div style="align-self:flex-end"><button id="toggle-key" class="secondary">Mostrar</button></div>
+  <div style="align-self:flex-end"><button id="save-key">Guardar API</button></div>
+  <div style="align-self:flex-end"><button id="remove-key" class="secondary">Apagar API</button></div>
+</div>
+<p id="key-status" class="help" aria-live="polite">A verificar configuração…</p>
+<div id="settings-msg" class="muted" style="margin-top:10px"></div>
+</section>
+
+<section class="card">
+<div class="headline"><h2>Resultados <span id="count" class="muted">(0)</span></h2><div class="toolbar"><button class="secondary" id="all">Seleccionar tudo</button><button class="secondary" id="none">Limpar</button><button id="dl">⬇ Descarregar seleccionados</button></div></div>
+<div class="scroll"><table><thead><tr><th>✓</th><th>Livro / edição</th><th>Fontes</th><th>Página</th></tr></thead><tbody id="results"><tr><td colspan="4" class="empty">Faz uma pesquisa ou abre uma página.</td></tr></tbody></table></div>
+</section>
+<section class="card"><div class="headline"><h2>Transferências</h2><div class="toolbar"><button id="toggle-pause" class="secondary">⏸ Pausar downloads</button><button id="resume-pending" class="secondary">▶ Retomar pendentes</button><button id="retry-failed" class="secondary">↻ Repetir falhados</button><span id="destination" class="muted"></span></div></div><p class="help" id="queue-hint">A fila é guardada automaticamente neste computador. Ao reabrir a aplicação, os downloads pendentes aguardam confirmação para continuar.</p><div id="queue"><p class="empty">Ainda não há transferências.</p></div></section>
+<p class="footer">A aplicação funciona localmente. As transferências automáticas usam as fontes directas e o Pixeldrain quando disponíveis. Serviços que exigem navegação manual (Mega, MediaFire, UFile, Terabox) são apresentados como ligações, sem contornar autenticação ou limites de acesso. Utiliza apenas conteúdos que tenhas autorização para descarregar.</p>
+</div>
+<script>
+'use strict';
+let token = '', lastResults = '', lastQueue = '', lastTags = '', lastArticle = '';
+let selected = new Set();
+let stashSelected = new Set(), lastStash = '';
+const $ = id => document.getElementById(id);
+const esc = val => String(val ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function post(url, data){
+  const r = await fetch(url, {method:'POST',headers:{'Content-Type':'application/json','X-App-Token':token},body:JSON.stringify(data)});
+  const j = await r.json();
+  if(!r.ok) throw Error(j.error || r.status);
+  return j;
+}
+function fillChips(where, tags){
+  $(where).innerHTML = (tags||[]).length ? '<div style="margin-top:10px">Tags: '+tags.map(t => `<button class="chip" type="button" data-tag="${esc(t.slug)}">${esc(t.name)}</button>`).join('')+'</div>' : '';
+  $(where).querySelectorAll('button[data-tag]').forEach(btn => btn.onclick = ()=>{$('tag').value = btn.dataset.tag;window.scrollTo({top:0,behavior:'smooth'});});
+}
+function renderResults(rows){
+  const key = JSON.stringify(rows);
+  if(key===lastResults) return;
+  lastResults=key;
+  const still = new Set(rows.map(r=>r.id));
+  selected = new Set([...selected].filter(i=>still.has(i)));
+  $('count').textContent=`(${rows.length})`;
+  $('results').innerHTML = rows.length ? rows.map(r=>{
+    const links = r.links || [];
+    const badges = links.length ? `<span class="badge">${links.filter(l=>l.kind!=='manual').length} automáticas · ${links.filter(l=>l.kind==='manual').length} manuais</span>` : `<span class="badge">${esc(r.source||'Por verificar')}</span>`;
+    const alternatives = links.filter(l => l.kind==='manual').map(l => `<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.label)} ↗</a>`).join('');
+    const detail = r.page_url ? `<button class="secondary small detail" data-url="${esc(r.page_url)}">Ver livros</button>` : '';
+    return `<tr><td><input type="checkbox" data-id="${r.id}" ${selected.has(r.id)?'checked':''}></td><td><strong>${esc(r.title)}</strong>${alternatives?`<div class="linklist">Alternativas manuais: ${alternatives}</div>`:''}</td><td>${badges}</td><td>${detail}</td></tr>`;
+  }).join('') : '<tr><td colspan="4" class="empty">Sem resultados.</td></tr>';
+  $('results').querySelectorAll('input[data-id]').forEach(el => el.onchange = ()=>{let id=Number(el.dataset.id);el.checked?selected.add(id):selected.delete(id);});
+  $('results').querySelectorAll('button.detail').forEach(el => el.onclick = ()=>openArticle(el.dataset.url));
+}
+function renderStash(stash){
+  if(!stash) return;
+  const items=stash.items || [];
+  $('stash-count').textContent=`(${items.length})`;
+  $('stash-status').textContent=stash.message || '';
+  $('stash-progress').textContent=`${stash.processed||0}/${stash.total||items.length} analisados · ${items.filter(i=>i.status==='matched').length} encontrados`;
+  $('stash-search').disabled=$('stash-refresh').disabled=stash.status==='running'||!items.length;
+  $('stash-import').disabled=stash.status==='running';
+  $('stash-download').disabled=!items.some((item,i)=>item.status==='matched'&&stashSelected.has(i));
+  const fingerprint=JSON.stringify(items);
+  if(fingerprint===lastStash) return;
+  lastStash=fingerprint;
+  stashSelected=new Set([...stashSelected].filter(i=>i<items.length&&items[i].status==='matched'));
+  $('stash-results').innerHTML=items.length ? items.map((item,i)=>{
+    const matched=item.status==='matched';
+    const desc=item.match ? `<a href="${esc(item.match.page_url)}" target="_blank" rel="noopener noreferrer">${esc(item.match.title)} ↗</a>` : esc(item.message||'');
+    const name=item.status==='matched'?'Encontrado':item.status==='not_found'?'Não encontrado':item.status==='error'?'Erro':'Pendente';
+    return `<tr><td><input type="checkbox" data-stash="${i}" ${matched?'':'disabled'} ${stashSelected.has(i)?'checked':''}></td><td>${esc(item.series)}</td><td>#${esc(item.number)}</td><td>${esc(item.year)}</td><td><span class="badge ${matched?'done':item.status==='error'?'fail':''}">${name}</span></td><td>${desc}</td></tr>`;
+  }).join('') : '<tr><td colspan="6" class="empty">Importa um CSV para começar.</td></tr>';
+  $('stash-results').querySelectorAll('input[data-stash]').forEach(el=>el.onchange=()=>{
+    const i=Number(el.dataset.stash);
+    el.checked?stashSelected.add(i):stashSelected.delete(i);
+    $('stash-download').disabled=!stashSelected.size;
+  });
+}
+
+function renderQueue(rows, paused=false){
+  const key = JSON.stringify([rows, paused]);
+  if(key===lastQueue) return;
+  lastQueue=key;
+  $('retry-failed').disabled=!rows.some(r=>r.status==='error');
+  $('resume-pending').disabled=!rows.some(r=>['queued','interrupted'].includes(r.status));
+  $('queue').innerHTML = rows.length ? rows.slice().reverse().map(r=>{
+    let badge = r.status==='error'?'Falhou':r.status==='done'?'Validado':
+      r.status==='interrupted'?'Interrompido':r.status==='running'?(paused?'Em pausa':'A descarregar'):'Pendente';
+    const individual = r.status==='error'?`<button type="button" class="secondary small retry-single" data-id="${r.id}">↻ Repetir</button>`:'';
+    const location = r.filename?`<div class="muted">${esc(r.filename)}</div>`:'';
+    return `<div class="item"><div><strong>${esc(r.title)}</strong><div class="muted">${esc(r.message||'')}</div>${location}</div><div class="toolbar"><span class="badge ${r.status==='error'?'fail':r.status==='done'?'done':''}">${badge}</span>${individual}</div></div>`;
+  }).join('') : '<p class="empty">Ainda não há transferências.</p>';
+  $('queue').querySelectorAll('button.retry-single').forEach(btn => btn.onclick=async()=>{
+    try{await post('/api/retry-failed',{id:Number(btn.dataset.id)});await tick();}
+    catch(e){alert('Não foi possível repetir: '+e.message);}
+  });
+}
+
+async function tick(){
+  try{
+    const r=await fetch('/api/state',{cache:'no-store'});
+    if(!r.ok) throw Error('HTTP '+r.status);
+    const s=await r.json();
+    token=s.token;
+    $('destination').textContent='📁 '+s.download_dir;
+    $('status').textContent=s.search.message;
+    $('go').disabled=$('open-article').disabled=s.search.status==='running';
+    renderResults(s.results);
+    renderQueue(s.downloads, s.paused);
+    renderStash(s.stash);
+    $('toggle-pause').textContent=s.paused?'▶ Retomar downloads':'⏸ Pausar downloads';
+    $('toggle-pause').dataset.paused=s.paused?'1':'0';
+    $('key-status').textContent=s.has_api_key?'✅ Chave API guardada neste computador.':'⚪ Chave API não configurada.';
+    const tagsKey=JSON.stringify(s.tags||[]);
+    if(tagsKey!==lastTags){lastTags=tagsKey;fillChips('article-tags',s.tags);}
+    if(s.article_url!==lastArticle){lastArticle=s.article_url;if(lastArticle)$('article-url').value=lastArticle;}
+    if(document.activeElement!==$('destination-input')) $('destination-input').value=s.download_dir;
+    if(document.activeElement!==$('priority')) $('priority').value=s.settings?.server_priority||'direct';
+    if(document.activeElement!==$('max-pages')) $('max-pages').value=s.settings?.max_pages||40;
+    if(document.activeElement!==$('connections')) $('connections').value=s.settings?.connections||8;
+  }catch(e){$('status').textContent='Erro de ligação à aplicação: '+e.message;}
+}
+async function openArticle(url){
+  try{await post('/api/article',{url});$('article-url').value=url;selected.clear();lastResults='';await tick();}
+  catch(e){alert('Não foi possível abrir a página: '+e.message);}
+}
+$('stash-import').onclick=()=>$('stash-file').click();
+$('stash-file').onchange=async(event)=>{
+  const file=event.target.files?.[0];
+  if(!file) return;
+  if(file.size>750000){alert('O CSV é demasiado grande (limite 750 KB).');return;}
+  try{
+    const csv=await file.text();
+    const result=await post('/api/stash/import',{csv});
+    stashSelected.clear();lastStash='';await tick();
+    $('stash-status').textContent=`${result.count} desejos importados. Carrega em Pesquisar lista.`;
+  }catch(e){alert('Importação Secret Stash: '+e.message);}
+  finally{event.target.value='';}
+};
+$('stash-search').onclick=async()=>{
+  try{await post('/api/stash/search',{});await tick();}
+  catch(e){alert('Pesquisa da lista: '+e.message);}
+};
+$('stash-refresh').onclick=async()=>{
+  if(!confirm('Pesquisar novamente todas as séries, incluindo as já encontradas? Esta operação pode demorar e fazer vários pedidos ao site.'))return;
+  try{await post('/api/stash/search',{refresh:true});await tick();}
+  catch(e){alert('Pesquisa da lista: '+e.message);}
+};
+$('stash-all').onclick=()=>{
+  document.querySelectorAll('#stash-results input[data-stash]:not(:disabled)').forEach(el=>{
+    el.checked=true;stashSelected.add(Number(el.dataset.stash));
+  });$('stash-download').disabled=!stashSelected.size;
+};
+$('stash-none').onclick=()=>{
+  document.querySelectorAll('#stash-results input[data-stash]').forEach(el=>el.checked=false);
+  stashSelected.clear();$('stash-download').disabled=true;
+};
+$('stash-download').onclick=async()=>{
+  if(!stashSelected.size){alert('Selecciona os títulos encontrados que pretendes descarregar.');return;}
+  try{
+    const res=await post('/api/stash/download',{ids:[...stashSelected]});
+    $('stash-status').textContent=`${res.count} downloads adicionados à fila. Os duplicados já concluídos ou em curso são ignorados.`;
+    await tick();
+  }catch(e){alert('Não foi possível adicionar os downloads: '+e.message);}
+};
+
+$('open-article').onclick=()=>openArticle($('article-url').value.trim());
+$('go').onclick=async()=>{
+  try{
+    await post('/api/search',{query:$('query').value,tag:$('tag').value,min_year:$('min-year').value,only_issues:$('only').checked,refresh:$('refresh').checked});
+    selected.clear();lastResults='';await tick();
+  }catch(e){alert('Pesquisa: '+e.message);}
+};
+$('query').onkeydown=e=>{if(e.key==='Enter')$('go').click();};
+$('article-url').onkeydown=e=>{if(e.key==='Enter')$('open-article').click();};
+$('find-tags').onclick=async()=>{
+  const q=$('tag').value.trim();
+  $('tags-list').textContent='A procurar tags…';
+  try{
+    const r=await fetch('/api/tags?q='+encodeURIComponent(q));
+    const data=await r.json();
+    if(!data.tags?.length){$('tags-list').textContent='Sem sugestões disponíveis. Podes escrever directamente o nome da tag ou colar o URL /tag/…';return;}
+    fillChips('tags-list',data.tags);
+  }catch(e){$('tags-list').textContent='Não foi possível consultar as tags: '+e.message;}
+};
+$('browse').onclick=async()=>{
+  try{const r=await post('/api/choose-folder',{});if(r.path){$('destination-input').value=r.path;$('settings-msg').textContent='Pasta guardada: '+r.path;}}
+  catch(e){$('settings-msg').textContent='Não foi possível abrir o selector: '+e.message;}
+};
+$('save-folder').onclick=async()=>{
+  try{const r=await post('/api/settings',{download_dir:$('destination-input').value});$('settings-msg').textContent='Pasta guardada.';}
+  catch(e){$('settings-msg').textContent='Erro: '+e.message;}
+};
+$('save-priority').onclick=async()=>{
+  try{await post('/api/settings',{server_priority:$('priority').value});$('settings-msg').textContent='Prioridade de servidores guardada.';}
+  catch(e){$('settings-msg').textContent='Erro: '+e.message;}
+};
+$('save-performance').onclick=async()=>{
+  try{
+    const max_pages=Number($('max-pages').value),connections=Number($('connections').value);
+    if(!Number.isInteger(max_pages)||max_pages<1||max_pages>100)throw Error('O máximo de páginas deve estar entre 1 e 100.');
+    if(!Number.isInteger(connections)||connections<1||connections>16)throw Error('As ligações devem estar entre 1 e 16.');
+    await post('/api/settings',{max_pages,connections});$('settings-msg').textContent='Desempenho guardado.';
+  }catch(e){$('settings-msg').textContent='Erro: '+e.message;}
+};
+$('retry-failed').onclick=async()=>{
+  try{let r=await post('/api/retry-failed',{});$('settings-msg').textContent=`${r.count} transferências colocadas novamente na fila.`;await tick();}
+  catch(e){alert('Erro ao repetir falhados: '+e.message);}
+};
+$('resume-pending').onclick=async()=>{
+  try{let r=await post('/api/resume-pending',{});$('settings-msg').textContent=`${r.count} transferências pendentes retomadas.`;await tick();}
+  catch(e){alert('Erro ao retomar pendentes: '+e.message);}
+};
+$('toggle-pause').onclick=async()=>{
+  const endpoint=$('toggle-pause').dataset.paused==='1'?'/api/resume':'/api/pause';
+  try{await post(endpoint,{});await tick();}
+  catch(e){$('settings-msg').textContent='Erro ao pausar/retomar: '+e.message;}
+};
+$('toggle-key').onclick=()=>{
+  const input=$('pixeldrain-key');const shown=input.type==='text';
+  input.type=shown?'password':'text';$('toggle-key').textContent=shown?'Mostrar':'Ocultar';
+};
+$('save-key').onclick=async()=>{
+  try{
+    const key=$('pixeldrain-key').value.trim();
+    if(!key)throw Error('Introduz primeiro a chave API.');
+    await post('/api/pixeldrain-key',{api_key:key});
+    $('pixeldrain-key').value='';
+    $('settings-msg').textContent='Chave API guardada neste computador (a validade não foi testada).';
+    await tick();
+  }catch(e){$('settings-msg').textContent='Erro ao guardar API: '+e.message;}
+};
+$('remove-key').onclick=async()=>{
+  if(!confirm('Apagar a chave API guardada neste computador?'))return;
+  try{await post('/api/pixeldrain-key',{remove:true});$('pixeldrain-key').value='';await tick();
+      $('settings-msg').textContent='Chave API apagada.';}
+  catch(e){$('settings-msg').textContent='Erro ao apagar API: '+e.message;}
+};
+$('all').onclick=()=>{$('results').querySelectorAll('input[data-id]').forEach(e=>{e.checked=true;selected.add(Number(e.dataset.id));});};
+$('none').onclick=()=>{$('results').querySelectorAll('input[data-id]').forEach(e=>e.checked=false);selected.clear();};
+$('dl').onclick=async()=>{try{await post('/api/download',{ids:[...selected]});$('settings-msg').textContent='Transferências adicionadas à fila.';await tick();}catch(e){alert(e.message);}};
+tick();setInterval(tick,1500);
 </script></body></html>

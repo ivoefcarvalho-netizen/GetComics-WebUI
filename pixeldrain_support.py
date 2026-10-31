@@ -9,6 +9,7 @@ import tempfile
 from urllib.parse import urlparse
 
 import requests
+from download_controls import PAUSE, DownloadStopped
 
 HOSTS = {'pixeldrain.com', 'www.pixeldrain.com', 'pixeldrain.net', 'www.pixeldrain.net'}
 
@@ -24,6 +25,8 @@ def _key():
     key = os.getenv('PIXELDRAIN_API_KEY', '').strip()
     if key:
         return key
+    if os.getenv('PIXELDRAIN_CREDENTIALS_MANAGED') == '1':
+        return ''
     env_file = Path(__file__).resolve().parent / '.env'
     if env_file.is_file():
         for line in env_file.read_text(encoding='utf-8').splitlines():
@@ -90,14 +93,20 @@ def _aria2_download(base, target, expected_size, key):
             base + '?download',
         ]
         print(f'[Pixeldrain] aria2c ({connections} ligações no máximo): {target.name}', flush=True)
-        result = subprocess.run(args, check=False, capture_output=True, text=True, errors='replace')
-        if result.returncode != 0:
-            details = (result.stderr or result.stdout or '').strip()
-            safe_details = '\n'.join(details.splitlines()[-6:])[:1000]
-            # Evitar colocar a chave de autenticação nos logs.
+        PAUSE.wait()
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, errors='replace',
+                                creationflags=(subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0))
+        PAUSE.register_process(proc)
+        try:
+            stdout, stderr = proc.communicate()
+        finally:
+            PAUSE.unregister_process(proc)
+        PAUSE.wait()
+        if proc.returncode != 0:
+            detail = '\n'.join((stderr or stdout or '').splitlines()[-5:])[:700]
             if key:
-                safe_details = safe_details.replace(key, '[OCULTA]')
-            raise RuntimeError(f'aria2c terminou com erro {result.returncode}: {safe_details or "sem detalhes"}')
+                detail = detail.replace(key, '[OCULTA]').replace(encoded, '[OCULTA]')
+            raise RuntimeError(f'aria2c devolveu erro {proc.returncode}: {detail or "sem detalhes"}')
         if not partial.is_file():
             raise RuntimeError('aria2c não produziu um ficheiro de download')
         length = partial.stat().st_size
@@ -123,6 +132,7 @@ def _requests_download(base, target, expected_size, auth):
                 raise RuntimeError('O servidor devolveu uma página de erro')
             with partial.open('wb') as stream:
                 for chunk in res.iter_content(chunk_size=1024 * 1024):
+                    PAUSE.wait()
                     if chunk:
                         stream.write(chunk)
         size = partial.stat().st_size
@@ -132,6 +142,9 @@ def _requests_download(base, target, expected_size, auth):
             raise RuntimeError('Ficheiro vazio')
         partial.rename(target)
         return target
+    except DownloadStopped:
+        # A transferência foi interrompida pelo fecho da aplicação.
+        raise
     except Exception:
         partial.unlink(missing_ok=True)
         raise
@@ -143,20 +156,23 @@ def download_pixeldrain(url, download_dir):
     if not key:
         print('[Pixeldrain] ATENÇÃO: sem chave API; limites da modalidade gratuita poderão aplicar-se.')
     auth = ('', key) if key else None
+    PAUSE.wait()
     info = _file_info(base, auth)
     target = _target(download_dir, info.get('name') or identifier + '.cbz')
     size = info.get('size')
+    PAUSE.wait()
     if shutil.which('aria2c'):
         try:
             return _aria2_download(base, target, size, key)
         except (RuntimeError, OSError) as exc:
-            # O aria2c empacotado pode falhar mesmo estando presente. Dar diagnóstico
-            # e usar o método HTTP autenticado como alternativa.
-            print('[Pixeldrain] Falha aria2c: ' + str(exc), flush=True)
-            print('[Pixeldrain] A tentar download alternativo através de Python.', flush=True)
-            partial = target.with_name(target.name + '.part')
+            print('[Pixeldrain] aria2c falhou, a usar Python: '+str(exc), flush=True)
+            # Não sobrepor um ficheiro parcial do aria2c.
+            partial=target.with_name(target.name + '.part')
             if partial.exists():
-                partial.rename(target.with_name(target.name + '.aria2-falhou'))
+                archived=target.with_name(target.name + '.aria2-falhou')
+                if archived.exists():
+                    archived=target.with_name(target.name + '.' + str(os.getpid()) + '.aria2-falhou')
+                partial.rename(archived)
     else:
-        print('[Pixeldrain] aria2c indisponível; a usar Python (uma ligação).', flush=True)
+        print('[Pixeldrain] aria2c indisponível; a usar Python (uma ligação).')
     return _requests_download(base, target, size, auth)

@@ -1,0 +1,33 @@
+name: GetComics Windows portátil
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, windows-portable]
+    paths:
+      - '**.py'
+      - '**.html'
+      - '**.txt'
+      - 'build_windows.ps1'
+      - '.github/workflows/build-windows.yml'
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: x64
+      - name: Compilar e testar Windows
+        shell: pwsh
+        run: .\build_windows.ps1
+      - name: Publicar ZIP portátil
+        uses: actions/upload-artifact@v4
+        with:
+          name: GetComics-Windows-Portable
+          path: dist/GetComics-Windows-Portable.zip
+          if-no-files-found: error
+          retention-days: 30

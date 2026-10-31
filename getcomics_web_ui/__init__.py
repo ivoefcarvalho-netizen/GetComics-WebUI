@@ -1,1 +1,1 @@
-"""GetComics Web UI."""
+"""Interface local GetComics."""

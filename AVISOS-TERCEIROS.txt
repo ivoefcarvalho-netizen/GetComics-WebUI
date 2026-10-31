@@ -1,0 +1,11 @@
+AVISOS DE COMPONENTES DE TERCEIROS
+
+A distribuição Windows inclui o programa aria2c.exe (aria2 1.37.0), obtido do
+projecto oficial aria2: https://github.com/aria2/aria2
+Licença do aria2: GPL-2.0-or-later (consultar licença e código-fonte no projecto).
+
+As restantes dependências Python são instaladas pelo script de compilação:
+requests, Beautiful Soup, rich, psutil, pywebview, PyInstaller e dependências transitivas.
+Antes da distribuição pública, verificar e incluir as respectivas licenças e
+cumprir as obrigações de disponibilização de código-fonte aplicáveis ao aria2.
+A aplicação não inclui credenciais.
